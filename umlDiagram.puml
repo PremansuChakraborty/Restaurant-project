@@ -1,0 +1,203 @@
+@startuml
+' Define stereotypes
+skinparam classAttributeIconSize 0
+
+' =====================
+' Enumerations
+' =====================
+enum RestaurantStaffStatus {
+    ACTIVE
+    INACTIVE
+}
+
+enum OrderItemEnum {
+    PENDING
+    READY
+    SERVED
+}
+
+' =====================
+' Entities / Models
+' =====================
+class Customer {
+    - id: int
+    - name: String
+    - phone: String
+    - email: String
+    - password: String
+}
+
+class RestaurantStaff {
+    - id: int
+    - userName: String
+    - role: String
+    - status: RestaurantStaffStatus
+}
+
+class TableInfo {
+    - id: int
+    - capacity: int
+    - status: String
+}
+
+class Booking {
+    - id: int
+    - customerId: int
+    - tableId: int
+    - bookingTime: LocalDateTime
+    - status: String
+}
+
+class MenuItem {
+    - id: int
+    - name: String
+    - price: double
+    - category: String
+}
+
+class Order {
+    - id: int
+    - tableId: int
+    - waiterId: int
+    - status: String
+    - time: LocalDateTime
+}
+
+class OrderItems {
+    - id: int
+    - orderId: int
+    - menuItemId: int
+    - quantity: int
+    - status: OrderItemEnum
+}
+
+class Billing {
+    - id: int
+    - orderId: int
+    - totalAmount: double
+    - paymentStatus: String
+    - paymentMode: String
+    - date: LocalDateTime
+}
+
+' =====================
+' DAOs
+' =====================
+interface CustomerDAO <<DAO>> {
+    + addCustomer(c: Customer): boolean
+    + getCustomerById(id: int): Customer
+}
+
+class CustomerDAOImp <<DAO>> {
+}
+
+interface RestaurantStaffDAO <<DAO>> {
+    + addRestaurantStaff(s: RestaurantStaff): boolean
+    + getRestaurantStaffById(id: int): RestaurantStaff
+    + updateRestaurantStaffStatus(id: int, status: RestaurantStaffStatus): boolean
+}
+
+class RestaurantStaffDAOImp <<DAO>> {
+}
+
+interface TableInfoDAO <<DAO>> {
+    + addTable(t: TableInfo): boolean
+    + updateStatus(tableId: int, status: String): boolean
+}
+
+class TableInfoDAOImp <<DAO>> {
+}
+
+interface BookingDAO <<DAO>> {
+    + addBooking(b: Booking): boolean
+    + cancelBooking(id: int): boolean
+}
+
+class BookingDAOImp <<DAO>> {
+}
+
+interface MenuItemDAO <<DAO>> {
+    + getMenu(): List<MenuItem>
+}
+
+class MenuItemDAOImp <<DAO>> {
+}
+
+interface OrderDetailsDAO <<DAO>> {
+    + addOrder(o: Order): int
+    + updateOrderStatus(orderId: int, status: String): boolean
+}
+
+class OrderDetailsDAOImp <<DAO>> {
+}
+
+interface OrderItemsDAO <<DAO>> {
+    + addOrderItem(item: OrderItems): int
+    + updateStatus(id: int, status: OrderItemEnum): boolean
+    + getOrderItemById(id: int): OrderItems
+}
+
+class OrderItemsDAOImp <<DAO>> {
+}
+
+interface BillingDAO <<DAO>> {
+    + createBill(b: Billing): int
+}
+
+class BillingDAOImp <<DAO>> {
+}
+
+' =====================
+' Services
+' =====================
+class CustomerIntegratedServices <<Service>> {
+}
+
+class OrderService <<Service>> {
+}
+
+class BillingService <<Service>> {
+}
+
+' =====================
+' Utility
+' =====================
+class DBConnection <<Singleton>> {
+    - instance: DBConnection
+    - connection: Connection
+    + getInstance(): DBConnection
+    + getConnection(): Connection
+}
+
+' =====================
+' Relationships
+' =====================
+Customer "1" -- "*" Booking
+Booking "*" -- "1" TableInfo
+Order "1" -- "*" OrderItems
+OrderItems "*" -- "1" MenuItem
+Order "1" -- "1" Billing
+RestaurantStaff "1" -- "*" Order
+
+' DAO Implementations dependencies
+CustomerIntegratedServices ..> CustomerDAO
+OrderService ..> OrderDetailsDAO
+OrderService ..> OrderItemsDAO
+OrderService ..> MenuItemDAO
+OrderService ..> RestaurantStaffDAO
+BillingService ..> BillingDAO
+
+' DAOs and Services depend on DBConnection
+CustomerDAOImp ..> DBConnection
+RestaurantStaffDAOImp ..> DBConnection
+TableInfoDAOImp ..> DBConnection
+BookingDAOImp ..> DBConnection
+MenuItemDAOImp ..> DBConnection
+OrderDetailsDAOImp ..> DBConnection
+OrderItemsDAOImp ..> DBConnection
+BillingDAOImp ..> DBConnection
+OrderService ..> DBConnection
+BillingService ..> DBConnection
+CustomerIntegratedServices ..> DBConnection
+
+@enduml
